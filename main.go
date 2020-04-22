@@ -9,6 +9,8 @@ import (
 
 var temp, _ = template.ParseFiles("static/template.html")
 
+var ordersTemp, _ = template.ParseFiles("static/orders.html")
+
 var stmt = `
 create table users (
 	id integer primary key,
@@ -76,7 +78,8 @@ func form(w http.ResponseWriter, r *http.Request) {
 
 	var cart Cart
 	cart.UserID = u.ID
-	cart.CreatedAt = time.Now()
+
+	cart.CreatedAt.Scan(time.Now())
 	cart.generateToken()
 	cart.Quantity = toInt(quantity)
 	cart.ProductID = toInt(item)
@@ -132,8 +135,40 @@ func register(w http.ResponseWriter, r *http.Request) {
 	registerPage.Execute(w, errors)
 }
 
+func orders(w http.ResponseWriter, r *http.Request) {
+	data := make(map[string]string)
+	// get user
+	var u User
+	c, err := getCookie(r, "grocery")
+	if err != nil {
+		log.Printf("Error in getting cookie: %v", err)
+		data["error"] = err.Error()
+		u.Username = "anon"
+		ordersTemp.Execute(w, data)
+		return
+	}
+	// log.Printf("Cookie is: %v", c.Value)
+	if err := u.getUser(c.Value); err != nil {
+		log.Printf("Error in getting user: %v", err)
+		data["error"] = err.Error()
+		u.Username = "anon"
+	}
+	log.Printf("Loaded user is: %v", u)
+	var cart Cart
+
+	if carts, err := cart.get(u.ID); err != nil {
+		log.Printf("Error in getting cart: %v", err)
+		data["error"] = err.Error()
+	} else {
+		log.Printf("Loaded cart is: %#v", carts)
+		ordersTemp.Execute(w, carts)
+	}
+
+}
+
 func main() {
 	http.HandleFunc("/", form)
 	http.HandleFunc("/register", register)
+	http.HandleFunc("/orders", orders)
 	http.ListenAndServe(":8080", nil)
 }

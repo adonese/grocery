@@ -1,6 +1,7 @@
 package main
 
 import (
+	"database/sql"
 	"log"
 	"net/http"
 	"time"
@@ -62,14 +63,18 @@ func (u User) generateCookie() *http.Cookie {
 }
 
 type Cart struct {
-	ID          int       `db:"id"`
-	UserID      int       `db:"user_id"`
-	CreatedAt   time.Time `db:"created_at"`
-	Delivery    time.Time `db:"delivery"`
-	IsCompleted bool      `db:"is_completed"`
-	ProductID   int       `db:"product_id"`
-	Quantity    int       `db:"quantity"`
-	Token       string    `db:"token"`
+	ID          int            `db:"id"`
+	UserID      int            `db:"user_id"`
+	CreatedAt   sql.NullString `db:"created_at"`
+	Delivery    sql.NullString `db:"delivery"`
+	IsCompleted sql.NullBool   `db:"is_completed"`
+	ProductID   int            `db:"product_id"`
+	Quantity    int            `db:"quantity"`
+	Token       string         `db:"token"`
+}
+
+func newCart() *Cart {
+	return &Cart{}
 }
 
 func (c *Cart) generateToken() {
@@ -91,6 +96,33 @@ func (c *Cart) save() error {
 	}
 	return nil
 
+}
+
+type MyTime time.Time
+
+func (t *MyTime) Scan(v interface{}) error {
+	// Should be more strictly to check this type.
+	vt, err := time.Parse("2006-01-02 15:04:05", string(v.([]byte)))
+	if err != nil {
+		return err
+	}
+	*t = MyTime(vt)
+	return nil
+}
+
+func (c *Cart) get(id int) ([]Cart, error) {
+	var carts []Cart
+
+	db, err := getDB("data.db")
+	if err != nil {
+		return nil, err
+	}
+
+	db.Exec(stmt)
+	if err := db.Select(&carts, "select * from carts where user_id = $1", id); err != nil {
+		return nil, err
+	}
+	return carts, nil
 }
 
 type Product struct {
