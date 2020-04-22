@@ -2,6 +2,7 @@ package main
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/jmoiron/sqlx"
 	_ "github.com/mattn/go-sqlite3"
@@ -21,4 +22,9 @@ func getCookie(r *http.Request, name string) (*http.Cookie, error) {
 		return nil, err
 	}
 	return c, nil
+}
+
+func toInt(v string) int {
+	d, _ := strconv.Atoi(v)
+	return d
 }

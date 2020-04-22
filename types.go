@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/google/uuid"
 	_ "github.com/mattn/go-sqlite3"
 )
 
@@ -60,15 +61,36 @@ func (u User) generateCookie() *http.Cookie {
 	return c
 }
 
-type Card struct {
-	ID          int
-	UserID      int
-	CreatedAT   time.Time
-	Delivery    time.Time
-	IsCompleted bool
-	ProductID   int
-	Quantity    int
-	Token       string
+type Cart struct {
+	ID          int       `db:"id"`
+	UserID      int       `db:"user_id"`
+	CreatedAt   time.Time `db:"created_at"`
+	Delivery    time.Time `db:"delivery"`
+	IsCompleted bool      `db:"is_completed"`
+	ProductID   int       `db:"product_id"`
+	Quantity    int       `db:"quantity"`
+	Token       string    `db:"token"`
+}
+
+func (c *Cart) generateToken() {
+	t := uuid.New().String()
+	c.Token = t
+}
+
+func (c *Cart) save() error {
+	db, err := getDB("data.db")
+	if err != nil {
+		return err
+	}
+
+	db.Exec(stmt)
+	tx := db.MustBegin()
+	tx.NamedExec("insert into carts(user_id, created_at, product_id, quantity, token) values(:user_id, :created_at, :product_id, :quantity, :token)", c)
+	if err := tx.Commit(); err != nil {
+		return err
+	}
+	return nil
+
 }
 
 type Product struct {

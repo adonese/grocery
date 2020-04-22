@@ -4,6 +4,7 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"time"
 )
 
 var temp, _ = template.ParseFiles("static/template.html")
@@ -63,6 +64,26 @@ func form(w http.ResponseWriter, r *http.Request) {
 	log.Printf("Loaded user profile is: %#v", u)
 	data["username"] = u.Username
 	if r.Method == "GET" {
+		temp.Execute(w, data)
+		return
+	}
+
+	// for submitting part
+	item := r.PostFormValue("item")
+	quantity := r.PostFormValue("quantity")
+	// notes := r.PostFormValue("notes")
+	// email := r.PostFormValue("email")
+
+	var cart Cart
+	cart.UserID = u.ID
+	cart.CreatedAt = time.Now()
+	cart.generateToken()
+	cart.Quantity = toInt(quantity)
+	cart.ProductID = toInt(item)
+
+	if err := cart.save(); err != nil {
+		log.Printf("Error in cart.save: %v", err)
+		data["error"] = err.Error()
 		temp.Execute(w, data)
 		return
 	}

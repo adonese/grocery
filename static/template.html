@@ -21,16 +21,16 @@
             {{ if .error }}
             <p>The error is: {{.error}}</p>
             {{end}}
-        <form>
+        <form method="POST" action="/">
             <div class="form-group">
                 <label for="username">Email address</label>
-                <input type="email" class="form-control" id="username" placeholder="name@example.com">
+                <input name="email" type="email" class="form-control" id="username" placeholder="name@example.com">
             </div>
 
             <div class="form-row">
                 <div class="form-group col-md-8">
                     <label for="items">Select item (only one at a time)</label>
-                    <select class="form-control" id="items" onclick="selectionBox()">
+                    <select name="item" class="form-control" id="items" onclick="selectionBox()">
                         <option value="1">Sugar</option>
                         <option value="2">Bread</option>
                         <option value="3">Rice</option>
@@ -41,15 +41,17 @@
 
                 <div class="form-group col-md-2">
                     <label for="quantity">Quantity</label>
-                    <input type="text" class="form-control" id="quantity">
+                    <input name="quantity" type="text" class="form-control" id="quantity">
                 </div>
             </div>
 
             <div class="form-group">
                 <label for="exampleFormControlTextarea1">Exta notes</label>
-                <textarea placeholder="Red sugar" class="form-control" id="exampleFormControlTextarea1"
+                <textarea name="notes" placeholder="Red sugar" class="form-control" id="exampleFormControlTextarea1"
                     rows="3"></textarea>
             </div>
+                        <button type="submit" class="btn btn-primary">Submit</button>
+
         </form>
     </div>
 
