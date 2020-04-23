@@ -90,6 +90,8 @@ func form(w http.ResponseWriter, r *http.Request) {
 		temp.Execute(w, data)
 		return
 	}
+	data["messages"] = "Your request has been made!"
+	temp.Execute(w, data)
 
 }
 
