@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"net/http"
 	"strconv"
 
@@ -35,11 +36,14 @@ func getItems(r *http.Request) []CartItems {
 	r.ParseForm()
 	items := r.Form["items"]
 	quantities := r.Form["quantities"]
+	log.Printf("Items are: %v", items)
 
 	// make sure length of items == length = quarantines
+	var cart CartItems
 	for k := range items {
-		c[k].ProductID = toInt(items[k])
-		c[k].Quantity = toInt(quantities[k]) // FIXME this could be a float
+		cart.ProductID = toInt(items[k])
+		cart.Quantity = toInt(quantities[k])
+		c = append(c, cart)
 
 	}
 	return c

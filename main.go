@@ -32,9 +32,9 @@ create table carts (
 
 create table cartitems (
     id integer primary key,
-    product_it integer,
+    product_id integer,
     cart_id integer,
-	user_id integer
+	user_id integer,
 	quantity real
 )
 
