@@ -20,6 +20,8 @@ type User struct {
 
 func (u *User) saveUser() error {
 	db, _ := getDB("data.db")
+	defer db.Close()
+
 	db.Exec(stmt)
 
 	tx := db.MustBegin()
@@ -33,6 +35,8 @@ func (u *User) saveUser() error {
 
 func (u *User) getUser(username string) error {
 	db, _ := getDB("data.db")
+	defer db.Close()
+
 	db.Exec(stmt)
 
 	tx := db.MustBegin()
@@ -82,32 +86,25 @@ func (c *Cart) generateToken() {
 	c.Token = t
 }
 
-func (c *Cart) save() error {
+func (c *Cart) save() (int, error) {
+	var count int
 	db, err := getDB("data.db")
 	if err != nil {
-		return err
+		return count, err
 	}
+	defer db.Close()
 
 	db.Exec(stmt)
 	tx := db.MustBegin()
 	tx.NamedExec("insert into carts(user_id, created_at, product_id, quantity, token) values(:user_id, :created_at, :product_id, :quantity, :token)", c)
 	if err := tx.Commit(); err != nil {
-		return err
+		log.Printf("Error in cart.save: TX: %v", err)
+		return count, err
 	}
-	return nil
+	db.Get(&count, "select id from carts order by id desc limit 1")
 
-}
+	return count, nil
 
-type MyTime time.Time
-
-func (t *MyTime) Scan(v interface{}) error {
-	// Should be more strictly to check this type.
-	vt, err := time.Parse("2006-01-02 15:04:05", string(v.([]byte)))
-	if err != nil {
-		return err
-	}
-	*t = MyTime(vt)
-	return nil
 }
 
 func (c *Cart) get(id int) ([]Cart, error) {
@@ -117,12 +114,79 @@ func (c *Cart) get(id int) ([]Cart, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer db.Close()
 
 	db.Exec(stmt)
 	if err := db.Select(&carts, "select * from carts where user_id = $1", id); err != nil {
 		return nil, err
 	}
 	return carts, nil
+}
+
+type CartItems struct {
+	/*
+			id integer primary key,
+		    product_it integer,
+		    cart_id integer,
+			user_id integer
+	*/
+	ID        int `db:"id"`
+	UserID    int `db:"user_id"`
+	CartID    int `db:"cart_id"`
+	ProductID int `db:"product_id"`
+	Quantity  int `db:"quantity"`
+}
+
+func (c *CartItems) populate() error {
+	db, err := getDB("data.db")
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+
+	tmt := `create table cartitems (
+    id integer primary key,
+    product_id integer,
+    cart_id integer,
+	user_id integer,
+	quantity integer
+	)`
+
+	db.Exec(tmt)
+	log.Printf("Value of caritems is: %v", c)
+	// tx := db.MustBegin()
+	if _, err := db.NamedExec("insert into cartitems(user_id, cart_id, product_id, quantity) values(:user_id, :cart_id, :product_id, :quantity)", c); err != nil {
+		log.Printf("Error in CartItems.populate: %v", err)
+		return err
+	}
+
+	return nil
+}
+
+func (c *CartItems) all() ([]CartItems, error) {
+	var items []CartItems
+
+	db, err := getDB("data.db")
+	if err != nil {
+		return nil, err
+	}
+	defer db.Close()
+
+	tmtt := `create table cartitems (
+    id integer primary key,
+    product_it integer,
+    cart_id integer,
+	user_id integer
+)`
+	db.Exec(tmtt)
+
+	tx := db.MustBegin()
+	tx.Select(&items, "select * from cartitems")
+	if err := tx.Commit(); err != nil {
+		log.Printf("Error in CartItems.all: %v", err)
+		return nil, err
+	}
+	return items, nil
 }
 
 type Product struct {
@@ -133,4 +197,5 @@ type Product struct {
 type Price struct {
 	ID        int
 	UnitPrice float32
+	ProductID int
 }

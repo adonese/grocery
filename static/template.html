@@ -14,43 +14,43 @@
 </head>
 
 <body>
-<nav class="navbar navbar-expand-lg navbar-light bg-light">
-    <a class="navbar-brand" href="/">Navbar</a>
-    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
-        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-    </button>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <a class="navbar-brand" href="/">Navbar</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
 
-    <div class="collapse navbar-collapse" id="navbarSupportedContent">
-        <ul class="navbar-nav mr-auto">
-            <li class="nav-item active">
-                <a class="nav-link" href="/">Home <span class="sr-only">(current)</span></a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="/orders">Orders</a>
-            </li>
-        </ul>
-    </div>
-</nav>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item active">
+                    <a class="nav-link" href="/">Home <span class="sr-only">(current)</span></a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/orders">Orders</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
 
 
     <div class="container">
-            <p class="lead">Welcome, {{.username}}</p>
-            {{ if .error }}
-            <p>The error is: {{.error}}</p>
-            {{else if .messages }}
-            <p>{{.messages}} Go to <a href="/orders">Orders</a> to track it.</p>
-            {{end}}
+        <p class="lead">Welcome, {{.username}}</p>
+        {{ if .error }}
+        <p>The error is: {{.error}}</p>
+        {{else if .messages }}
+        <p>{{.messages}} Go to <a href="/orders">Orders</a> to track it.</p>
+        {{end}}
         <form method="POST" action="/">
             <div class="form-group">
                 <label for="username">Email address</label>
                 <input name="email" type="email" class="form-control" id="username" placeholder="name@example.com">
             </div>
 
-            <div class="form-row">
-                <div class="form-group col-md-8">
+            <div class="form-row" id="defaultItem">
+                <div class="form-group col-md-6">
                     <label for="items">Select item (only one at a time)</label>
-                    <select name="item" class="form-control" id="items" onclick="selectionBox()">
+                    <select name="items" class="form-control" id="items">
                         <option value="1">Sugar</option>
                         <option value="2">Bread</option>
                         <option value="3">Rice</option>
@@ -61,16 +61,22 @@
 
                 <div class="form-group col-md-2">
                     <label for="quantity">Quantity</label>
-                    <input name="quantity" type="text" class="form-control" id="quantity">
+                    <input name="quantities" type="text" class="form-control" id="quantity">
+                </div>
+
+                <div class="form-group col-md-2">
+                    <label for="newbtn">Add new</label>
+                    <a name="newbtn" class="btn btn-primary" onclick="addNew('items')">Submit</a>
                 </div>
             </div>
+
 
             <div class="form-group">
                 <label for="exampleFormControlTextarea1">Exta notes</label>
                 <textarea name="notes" placeholder="Red sugar" class="form-control" id="exampleFormControlTextarea1"
                     rows="3"></textarea>
             </div>
-                        <button type="submit" class="btn btn-primary">Submit</button>
+            <button type="submit" class="btn btn-primary">Submit</button>
 
         </form>
     </div>
@@ -84,6 +90,45 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
         integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
         crossorigin="anonymous"></script>
+
+    <script>
+        function addNew(item) {
+            var e = document.getElementById(item)
+            // const form = e.parentElement.parentElement.parentElement
+            const parent = document.getElementById("defaultItem")
+            var v = e.options[e.selectedIndex].value
+
+            var data = {1: "sugar", 2: "bread", 3: "rice", 4: "wheat", 5: "meat"}
+            var id = data[v]
+            console.log("id is: ", id)
+
+            
+            ele = document.createElement("div")
+            ele.className = parent.className
+
+            ele.innerHTML += `<div class="form-row">
+
+                    <div class="form-group col-md-6">
+                    <label for="${id}">Select item (only one at a time)</label>
+                    <select name="items" class="form-control" id="${id}">
+                        <option value="1">Sugar</option>
+                        <option value="2">Bread</option>
+                        <option value="3">Rice</option>
+                        <option value="4">Wheat</option>
+                        <option value="5">Meat</option>
+                    </select>
+                </div>
+
+                <div class="form-group col-md-2">
+                    <label for="${id}-quantity">Quantity</label>
+                    <input name="quantities" type="text" class="form-control" id="${id}-quantity">
+                </div>
+</div>`
+
+            console.log(v)
+            parent.append(ele)
+        }
+    </script>
 
 
 </body>

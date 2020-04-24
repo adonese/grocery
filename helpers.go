@@ -28,3 +28,19 @@ func toInt(v string) int {
 	d, _ := strconv.Atoi(v)
 	return d
 }
+
+func getItems(r *http.Request) []CartItems {
+	var c []CartItems
+
+	r.ParseForm()
+	items := r.Form["items"]
+	quantities := r.Form["quantities"]
+
+	// make sure length of items == length = quarantines
+	for k := range items {
+		c[k].ProductID = toInt(items[k])
+		c[k].Quantity = toInt(quantities[k]) // FIXME this could be a float
+
+	}
+	return c
+}

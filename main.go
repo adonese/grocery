@@ -30,6 +30,14 @@ create table carts (
 	token text
 );
 
+create table cartitems (
+    id integer primary key,
+    product_it integer,
+    cart_id integer,
+	user_id integer
+	quantity real
+)
+
 create table products (
     name text,
     product_id integer
@@ -70,7 +78,9 @@ func form(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// for submitting part
+	carItems := getItems(r)
+	log.Printf("Cart items are: %v", carItems)
+
 	item := r.PostFormValue("item")
 	quantity := r.PostFormValue("quantity")
 	// notes := r.PostFormValue("notes")
@@ -84,12 +94,19 @@ func form(w http.ResponseWriter, r *http.Request) {
 	cart.Quantity = toInt(quantity)
 	cart.ProductID = toInt(item)
 
-	if err := cart.save(); err != nil {
+	count, err := cart.save()
+	if err != nil {
 		log.Printf("Error in cart.save: %v", err)
 		data["error"] = err.Error()
 		temp.Execute(w, data)
 		return
 	}
+
+	for _, v := range carItems {
+		v.CartID = count
+		v.populate()
+	}
+
 	data["messages"] = "Your request has been made!"
 	temp.Execute(w, data)
 
